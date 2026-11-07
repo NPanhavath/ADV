@@ -1,0 +1,265 @@
+LLM MODEL
+FINE-TUNING
+BY: VANN VISAL
+
+-- 1 of 34 --
+
+01 	04
+02 	05
+03 	06
+TABLE OF
+CONTENT
+Fine-Tuning Supervised Trainer
+Setup
+Model & Preprocessor
+Setup Training Diagnosis
+Data Preparation 	Model Checkpoints
+
+-- 2 of 34 --
+
+Fine-Tuning
+
+-- 3 of 34 --
+
+FINETUNINGFine-tuning is a technique where a pretrained model is adapted to a new, specific task by continuing its
+training on a smaller, task-specific dataset. It leverages the knowledge learned from large-scale datasets
+and adjusts the model's parameters to improve performance on the new task.
+
+-- 4 of 34 --
+
+MODEL &
+PREPROCESSOR
+
+-- 5 of 34 --
+
+MODEL SELECTION
+
+-- 6 of 34 --
+
+MODEL LOADERA model loader is a utility or function that allows you to load a pretrained model, its architecture, and the
+associated weights (parameters) into memory so that you can use it for inference or further training
+(fine-tuning).
+
+-- 7 of 34 --
+
+MODEL LOADERIn Hugging Face's Transformers library, there are two main categories of model loaders: Model-specific
+loaders and AutoModel loaders.
+1. Model-Specific Loaders
+Definition: These loaders are tied to a specific model architecture. They are used when you know the
+exact type of model you want to load (e.g., BERT, GPT-2, T5).
+Example:
+BertForSequenceClassification.from_pretrained('bert-base-uncased')
+GPT2LMHeadModel.from_pretrained('gpt2')
+T5ForConditionalGeneration.from_pretrained('t5-small')
+
+-- 8 of 34 --
+
+MODEL LOADER2. AutoModel Loaders
+Definition: The AutoModel class and its variants automatically select the correct model architecture
+based on the model identifier you provide. This loader abstracts away the need to specify the model
+architecture explicitly, making it easier to switch between different model types.
+Example:
+AutoModelForSequenceClassification.from_pretrained('bert-base-uncased')
+AutoModelForTokenClassification.from_pretrained('roberta-base')
+AutoModelForCausalLM.from_pretrained('gpt2')
+
+-- 9 of 34 --
+
+MODEL LOADER
+
+-- 10 of 34 --
+
+Similar to AutoModel, the AutoProcessor class is used for automatically selecting the appropriate
+processor based on the type of model you are using. Different AutoProcessor classes are used for
+different types of models (text, image, audio, etc.), and they combine the functionalities of tokenizers,
+feature extractors, and image processors, depending on the model's input type.
+Processor Types include: Tokenizer, Image Processor, Audio Processor, Multimodal Processor and
+Audio-Text Processor.
+PROCESSOR LOADER
+
+-- 11 of 34 --
+
+Quantization is the process of reducing the precision of the weights or activations in a neural network
+model. This technique is mainly used to make models smaller, faster, and more efficient, the model's
+parameters (weights) are often stored as 32-bit floating-point numbers (FP32). Quantization reduces the
+precision of these values, using lower-bit representations like 8-bit integers (INT8) or 16-bit floating-
+point (FP16).
+QUANTIZATION
+
+-- 12 of 34 --
+
+The configuration parameters within this BitsAndBytesConfig help you define how quantization should
+be applied:
+QUANTIZATION
+1. 	load_in_8bit=True: 	specifies 	that 	the
+model should be loaded with 8-bit precision
+for its weights
+2. bnb_8bit_use_double_quant=True: apply
+an additional layer of quantization to improve
+the efficiency and performance of the 8-bit
+representation
+3. bnb_8bit_quant_type="nf4": defines the quantization type used when converting the model's weights
+4. bnb_8bit_compute_dtype=torch.float16: specifies the data type used for computations during the
+forward pass
+
+-- 13 of 34 --
+
+When loading Model, we can either use quanitzation config or load_in_4bit hyperparameter for
+quantization.
+MODEL SETUP
+
+-- 14 of 34 --
+
+Data
+Preparation
+
+-- 15 of 34 --
+
+Fine-tuning a model requires properly structured data, ensuring compatibility with the tokenizer, model
+architecture, and training pipeline. Below are the key stages:
+PREPARATION STAGES
+
+-- 16 of 34 --
+
+The data flow for fine-tuning a chat model begins with preparing the dataset in a structured format.
+Initially, raw data—often in JSON, CSV, or text format. In example:
+RAW FORMATS
+The actual formatting here is preferential but its best to structure in a way easily retrieve each feature,
+such as key-value json format which can be loaded using load_dataset, since we need to convert to
+conversation format in the next step.
+
+-- 17 of 34 --
+
+The conversation format is essential for organizing multi-turn dialogue data in a structured way, allowing
+the model to understand the flow of interactions between users and assistants. It also provides a
+structured format so templates can correctly map messages into the model’s expected input structure.
+CONVERSATION FORMATS
+To Identify format: Check HuggingFace Model Desc, Print Chat Template or Check Training Dataset
+
+-- 18 of 34 --
+
+The apply_chat_template() converts conversation-format into a single text string format specific to chat
+model’s expected input format, it is required to be able to correctly process and generate conversational
+responses.
+CHAT TEMPLATES
+
+-- 19 of 34 --
+
+A Data Collator in Hugging Face prepares batches of data before feeding them into a model. It handles:
+Tokenization (if not already tokenized)
+Padding (ensuring all inputs in a batch have the same length)
+Special formatting (e.g., adding masks, labels for training)
+Applying Chat Templates (only for some specific collators)
+Some data collators can be imported from specific library/framework such as transformers, unsloth, or
+can be manually defined in a function. We don’t manually use collator but instead pass it to a trainer as
+arguments.
+DATA COLLATIONS
+
+-- 20 of 34 --
+
+Supervised
+Trainer Setup
+
+-- 21 of 34 --
+
+PEFT (Parameter-Efficient Fine-Tuning) is a technique that fine-tunes only a small subset of model
+parameters instead of the entire model. This makes training faster, less memory-intensive, and more
+efficient, especially for large language models (LLMs).
+PEFT
+Learn More
+
+-- 22 of 34 --
+
+LoRA (Low-Rank Adaptation) is a parameter-efficient fine-tuning (PEFT) method that freezes the original
+model weights and adds small trainable low-rank matrices to transformer layers. LoRA decomposes
+weight updates into two small matrices A and B (rank "r" << full model size), so fewer parameters need
+to be updated.
+Original Weight Matrix: W of size (512 × 512)
+LoRA Decomposition: Introduces two smaller matrices:
+A of size (512 × 8) (low-rank dimension r = 8)
+B of size (8 × 512)
+The LoRA update is computed as:
+W′=W+AB
+where:
+AB=[(512×8)×(8×512)=512×512]
+Instead of updating 262,144 parameters (512 × 512), we now train only 8,192 parameters (512 × 8 + 8 ×
+512), saving 97% of trainable parameters!
+LORA
+
+-- 23 of 34 --
+
+LORA COFIGS
+
+-- 24 of 34 --
+
+LORA COFIGSTo identify target module names for LoRA, use print(model):
+
+-- 25 of 34 --
+
+TRAINER CONFIGS
+
+-- 26 of 34 --
+
+TRAINERAfter setting up the configs, we can start fine-tuning by passing the configs, models, processor, data
+collator, train and evaluation(optional) dataset to the trainer:
+call trainer.train() to start
+
+-- 27 of 34 --
+
+TRAINING
+DIAGNOSIS
+Telephone: 010 686 878 	Email: info@aifarm.dev
+
+-- 28 of 34 --
+
+When fine-tuning a model, tracking Loss and Validation Loss is crucial for understanding how well the
+model is learning and generalizing.
+1. Training Loss (Loss)
+It indicates how well the model is minimizing the difference between its predictions and the ground
+truth.
+A decreasing training loss usually means the model is learning.
+However, an extremely low training loss could indicate overfitting, meaning the model memorized the
+training data rather than learning general patterns.
+2. Validation Loss
+Unlike training loss, validation loss tells us how well the model generalizes to unseen data.
+If validation loss is much higher than training loss, it suggests overfitting—the model is performing
+well on training data but poorly on new data.
+If both training and validation loss are high, the model may be underfitting, meaning it hasn't learned
+enough.
+LOSS & VAL LOSS
+
+-- 29 of 34 --
+
+WEIGHT & BIAS REPORTWeights & Biases (WandB) is a popular tool for tracking, visualizing, and analyzing machine learning
+experiments, including fine-tuning models. When you set report_to = "wandb" in your trainer
+configuration, it automatically logs various training metrics to your WandB dashboard.
+Initialize wandb before trainer.train(), it will prompt for login on first use only.
+
+-- 30 of 34 --
+
+WEIGHT & BIAS REPORT
+
+-- 31 of 34 --
+
+MODEL
+CHECKPOINTS
+
+-- 32 of 34 --
+
+A model checkpoint is a saved state of a model at a specific point during training. It includes the model’s
+weights, optimizer state, and sometimes additional metadata like training step and loss. Checkpoints
+allow you to:
+Resume training if interrupted.
+Save intermediate progress to avoid retraining from scratch.
+Evaluate models at different stages to select the best version.
+Deploy trained models for inference.
+CHECKPOINTS
+or
+We can load Checkpoint directly or apply checkpoint adapter on the base model it is trained on.
+
+-- 33 of 34 --
+
+Thank you
+
+-- 34 of 34 --
+
