@@ -1,7 +1,7 @@
 # Supervised Fine-Tuning (SFT) for Large Language Models
 
 > **A beginner-friendly guide to the full slide deck**  
-> Based on *LLM Model Fine-Tuning* by Vann Visal (34 slides)
+> Based on *LLM Model Fine-Tuning* by Mr. Vann Visal (34 slides)
 
 ---
 
